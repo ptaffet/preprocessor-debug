@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.3)
 project(ClangPluginExamples CXX)
 
 include(cmake/AddClangPlugin.cmake)
