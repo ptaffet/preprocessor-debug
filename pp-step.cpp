@@ -116,6 +116,8 @@ int main(int argc, char *argv[]) {
 
     for (const Arg *A : Args.filtered(OPT_I))
       ci.getHeaderSearchOpts().AddPath(A->getValue(), frontend::Quoted, false, true);
+    for (const Arg *A : Args.filtered(OPT_isystem))
+      ci.getHeaderSearchOpts().AddPath(A->getValue(), frontend::Angled, false, true);
     for (const Arg *A : Args.filtered(OPT_D, OPT_U)) {
       if (A->getOption().matches(OPT_D))
         ci.getPreprocessorOpts().addMacroDef(A->getValue());
