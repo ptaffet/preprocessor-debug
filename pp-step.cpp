@@ -18,7 +18,8 @@ using namespace clang;
 
 struct log_expands : public PPCallbacks {
   Preprocessor &pp;
-  log_expands(Preprocessor &);
+  SourceManager &sm;
+  log_expands(Preprocessor &, SourceManager &);
   virtual void MacroExpands(const Token &, const MacroDefinition &, SourceRange,
                             const MacroArgs *);
 };
@@ -43,11 +44,15 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
 }
 
-log_expands::log_expands(Preprocessor &p) : pp(p) {}
+log_expands::log_expands(Preprocessor &p, SourceManager& s) : pp(p), sm(s) {}
 
 void log_expands::MacroExpands(const Token &MacroNameTok,
                                const MacroDefinition &MD, SourceRange,
                                const MacroArgs *Args) {
+  if (!sm.isInMainFile(MacroNameTok.getLocation())) {
+    // llvm::outs() << "Skipping macro " << pp.getSpelling(MacroNameTok) << " because it is not expanded from the specified file\n";
+    return;
+  }
 
   llvm::outs() << "expanding macro " << pp.getSpelling(MacroNameTok) << " into "<< '\n';
   const auto macro = MD.getMacroInfo();
@@ -139,7 +144,7 @@ void processFile(CompilerInstance &ci, const FileID &fileID) {
   ci.getPreprocessor().EnterMainSourceFile();
   ci.getDiagnosticClient().BeginSourceFile(ci.getLangOpts(),
                                            &ci.getPreprocessor());
-  std::unique_ptr<PPCallbacks> logger(new log_expands(ci.getPreprocessor()));
+  std::unique_ptr<PPCallbacks> logger(new log_expands(ci.getPreprocessor(), ci.getSourceManager()));
   ci.getPreprocessor().addPPCallbacks(std::move(logger));
 
   Token tok;
