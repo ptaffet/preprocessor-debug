@@ -8,9 +8,9 @@ Observe how the C preprocessor expands your complicated macros
 
 
 ## Build instructions:
-* mkdir build && cd build
-* cmake ..
-* make
+* `mkdir build && cd build`
+* `cmake ..`
+* `make`
 
 ## Use instructions:
-./pp-step ../example.cpp
+`./pp-step ../example.cpp`
