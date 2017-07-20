@@ -11,6 +11,7 @@
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Lex/PreprocessorOptions.h"
+#include "clang/Lex/TokenConcatenation.h"
 #include "llvm/Option/ArgList.h"
 #include "llvm/Option/OptTable.h"
 
@@ -19,9 +20,14 @@ using namespace clang;
 struct log_expands : public PPCallbacks {
   Preprocessor &pp;
   SourceManager &sm;
+  TokenConcatenation tokCat;
   log_expands(Preprocessor &, SourceManager &);
   virtual void MacroExpands(const Token &, const MacroDefinition &, SourceRange,
                             const MacroArgs *);
+	private:
+  Token prevprev, prev;
+  void printToken(const Token& tok);
+  void flushPrinter();
 };
 
 void configureTarget(CompilerInstance &ci);
@@ -44,7 +50,21 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
 }
 
-log_expands::log_expands(Preprocessor &p, SourceManager& s) : pp(p), sm(s) {}
+
+log_expands::log_expands(Preprocessor &p, SourceManager& s) : pp(p), sm(s), tokCat(p) {}
+
+void log_expands::printToken(const Token& tok) {
+	if (tokCat.AvoidConcat(prevprev, prev, tok))
+		llvm::outs() << ' ';
+	llvm::outs() << pp.getSpelling(tok);
+	prevprev = prev;
+	prev = tok;
+}
+
+void log_expands::flushPrinter() {
+	prevprev = {};
+	prev = {};
+}
 
 void log_expands::MacroExpands(const Token &MacroNameTok,
                                const MacroDefinition &MD, SourceRange,
@@ -58,24 +78,30 @@ void log_expands::MacroExpands(const Token &MacroNameTok,
   const auto macro = MD.getMacroInfo();
 
   for (const auto &tok : macro->tokens())
-    llvm::outs() << pp.getSpelling(tok) << ' ';
+	  printToken(tok);
+  flushPrinter();
+
+
+  llvm::outs() << '\n';
 
   if (!macro->isFunctionLike() || Args == nullptr)
     return;
 
-  llvm::outs() << '\n' << '\t' << "where:" << '\n';
+  llvm::outs() << '\t' << "where:" << '\n';
 
   auto tokenAt = [Args](unsigned int index) {
     return Args->getUnexpArgument(0) + index;
   };
 
+
   unsigned int i = 0;
   for (const auto args : macro->args()) {
     llvm::outs() << '\t' << '\t' << args->getNameStart() << " is ";
     while (tokenAt(i)->isNot(tok::eof)) {
-      llvm::outs() << pp.getSpelling(*tokenAt(i));
+      printToken(*tokenAt(i));
       i++;
     }
+    flushPrinter();
     i++;
     llvm::outs() << '\n';
   }
