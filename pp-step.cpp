@@ -1,4 +1,7 @@
-#include <iostream>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <unistd.h>
+#endif
 
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Basic/TargetOptions.h"
@@ -24,7 +27,7 @@ struct log_expands : public PPCallbacks {
   log_expands(Preprocessor &, SourceManager &);
   virtual void MacroExpands(const Token &, const MacroDefinition &, SourceRange,
                             const MacroArgs *);
-	private:
+  private:
   Token prevprev, prev;
   void printToken(const Token& tok);
   void flushPrinter();
@@ -40,13 +43,46 @@ void createPreprocessor(CompilerInstance &ci, llvm::opt::InputArgList &args);
 
 void processFile(CompilerInstance &ci, const FileID &fileID);
 
+
 int main(int argc, char *argv[]) {
+#ifdef __EMSCRIPTEN__
+  EM_ASM(
+	if (ENVIRONMENT_IS_NODE) {
+		  FS.mkdir('/local');
+		  FS.mount(NODEFS, { root: '.' }, '/local');
+
+		  FS.mkdir('/usr');
+		  FS.mkdir('/usr/tce');
+		  FS.mkdir('/usr/tce/packages');
+		  FS.mkdir('/usr/tce/packages/gcc');
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3');
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3/include');
+		  FS.mount(NODEFS, { root: '/usr/tce/packages/gcc/gcc-4.9.3/include' }, '/usr/tce/packages/gcc/gcc-4.9.3/include');
+		  
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3/lib64');
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc');
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu');
+		  FS.mkdir('/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3');
+		  FS.mount(NODEFS, { root: '/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3' }, '/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/x86_64-unknown-linux-gnu/4.9.3');
+
+		  FS.mkdir('/usr/local');
+		  FS.mkdir('/usr/local/include');
+		  FS.mount(NODEFS, { root: '/usr/local/include' }, '/usr/local/include');
+
+		  FS.mkdir('/usr/include');
+		  FS.mount(NODEFS, { root: '/usr/include' }, '/usr/include');
+	}
+	  );
+  chdir("/local");
+#endif
+
   CompilerInstance ci;
   configureTarget(ci);
   auto arguments = parseArgs(argc, argv);
   createPreprocessor(ci, arguments);
   auto fileID = getFileID(ci, arguments);
   processFile(ci, fileID);
+
   return EXIT_SUCCESS;
 }
 
@@ -92,7 +128,6 @@ void log_expands::MacroExpands(const Token &MacroNameTok,
   auto tokenAt = [Args](unsigned int index) {
     return Args->getUnexpArgument(0) + index;
   };
-
 
   unsigned int i = 0;
   for (const auto args : macro->args()) {

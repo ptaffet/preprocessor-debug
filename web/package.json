@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "codemirror": "^5.28.0"
+  },
+  "name": "preprocessor-debug",
+  "version": "1.0.0",
+  "description": "Observe how the C preprocessor expands your complicated macros",
+  "main": "index.js",
+  "repository": "https://github.com/ptaffet/preprocessor-debug",
+  "author": "ptaffet",
+  "license": "MIT"
+}

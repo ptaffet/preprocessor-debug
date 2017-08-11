@@ -18,7 +18,11 @@ pp-step.bc: ../pp-step.cpp
 	em++ $(EMSCRIPEN_FLAGS) -I $(CLANG_INC_PATH)  $(CXXFLAGS)  -DSYSTEM_HEADERS=$(shell ../find_sys_includes.sh) -o $@ $<
 
 pp-step.html: pp-step.bc
-	em++ $(EMSCRIPTEN_FLAGS) $(CXXFLAGS) -s DEMANGLE_SUPPORT=1 -o $@ $< -Wl,-rpath,$(CLANG_LIB_PATH) $(FULL_LIB_PATHS) -lrt -ldl -lpthread -lm 
+	em++ $(EMSCRIPTEN_FLAGS) $(CXXFLAGS) -s DEMANGLE_SUPPORT=1 -rdynamic -o $@ $< -Wl,-rpath,$(CLANG_LIB_PATH) $(FULL_LIB_PATHS) -lpthread -lm 
 	cp pp-step.html.bkp pp-step.html
 
+clean:
+	-rm pp-step.bc
+	-rm pp-step.js pp-step.html pp-step.html.mem
+	-rm compiler_info.txt
 
