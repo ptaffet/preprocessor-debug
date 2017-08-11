@@ -23,7 +23,7 @@ Observe how the C preprocessor expands your complicated macros
 * Emscripten
 
 ## Build instructions:
-* Build clang in bitcode. This is hard, but can be done with the help of [`emmake`](https://kripken.github.io/emscripten-site/docs/compiling/Building-Projects.html#building-projects)
+* Build clang in bitcode. This is hard, but can be done with the help of [`emmake`](https://kripken.github.io/emscripten-site/docs/compiling/Building-Projects.html#building-projects). When you are done, update `CLANG_LIB_PATH` in `web/Makefile`.
 * `cd web`
 * `make`
 * `yarn`
