@@ -4,19 +4,7 @@ project(ClangPluginExamples CXX)
 include(cmake/AddClangPlugin.cmake)
 
 execute_process(
-  COMMAND ${CMAKE_CXX_COMPILER} -E -xc++ -v /dev/null
-  ERROR_FILE compiler_info.txt)
-
-execute_process(
-  COMMAND awk "/^End of search list/ \
-               { p=0 } \
-               { \
-                 if(p==1) { \
-                   printf \"\\\"%s\\\",\", $1 \
-                 } \
-               } \
-               /include <...> search starts here/ \
-               { p=1 }" compiler_info.txt
+  COMMAND ./find_sys_includes.sh
   OUTPUT_VARIABLE SYSTEM_HEADERS)
 
 add_clang_executable(pp-step)

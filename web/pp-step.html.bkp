@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+				<title>Emscripten-Generated Code</title>
+				<link rel="stylesheet" href="page.css" />
+				<link rel="stylesheet" href="codemirror-5.27.4/lib/codemirror.css">
+				<link rel="stylesheet" href="codemirror-5.27.4/theme/abcdef.css">
+				<script src="codemirror-5.27.4/lib/codemirror.js"></script>
+				<script src="codemirror-5.27.4/mode/clike/clike.js"></script>
+			</head>
+			<body>
+
+				<div class="spinner" id='spinner'>
+				</div>
+				<div class="emscripten" id="status">Downloading...</div>
+
+				<span id='controls'>
+							</span>
+
+							<div class="emscripten">
+								<progress value="0" max="100" id="progress" hidden=1>
+								</progress>
+							</div>
+
+
+							<div class="emscripten_border">
+								<textarea id="insource" class="emscripten">
+// taken from https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms
+#define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
+
+#define DEC(x) PRIMITIVE_CAT(DEC_, x)
+#define DEC_0 0
+#define DEC_1 0
+#define DEC_2 1
+#define DEC_3 2
+#define DEC_4 3
+#define DEC_5 4
+#define DEC_6 5
+#define DEC_7 6
+#define DEC_8 7
+#define DEC_9 8
+
+#define EMPTY()
+#define DEFER(id) id EMPTY()
+#define OBSTRUCT(...) __VA_ARGS__ DEFER(EMPTY)()
+#define EXPAND(...) __VA_ARGS__
+
+#define REPEAT(count, macro, ...) \
+	WHEN(count) \
+	( \
+			  OBSTRUCT(REPEAT_INDIRECT) () \
+			  ( \
+							DEC(count), macro, __VA_ARGS__ \
+						) \
+			  OBSTRUCT(macro) \
+			  ( \
+							DEC(count), __VA_ARGS__ \
+						) \
+		  )
+#define REPEAT_INDIRECT() REPEAT
+
+//An example of using this macro
+#define M(i, _) i
+EVAL(REPEAT(8, M, ~))
+								</textarea>
+							</div>
+							<span>
+								<input id="ppbutton" type="button" value="Preprocess" onclick="preprocess()" disabled></input>
+							</span>
+							<textarea id="output" rows="8">
+							</textarea>
+
+							<script type='text/javascript' src="page.js">
+						</script>
+						<script>
+
+							(function() {
+							var memoryInitializer = 'pp-step.html.mem';
+							if (typeof Module['locateFile'] === 'function') {
+							memoryInitializer = Module['locateFile'](memoryInitializer);
+							} else if (Module['memoryInitializerPrefixURL']) {
+							memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+							}
+							var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+							xhr.open('GET', memoryInitializer, true);
+							xhr.responseType = 'arraybuffer';
+							xhr.send(null);
+							})();
+
+							var script = document.createElement('script');
+							script.src = "pp-step.js";
+							document.body.appendChild(script);
+
+						</script>
+					</body>
+				</html>
